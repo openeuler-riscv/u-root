@@ -12,7 +12,7 @@ package linux
 // with, we can split when time comes.
 type KexecOptions struct {
 	// DTB is used as the device tree blob, if specified.
-	DTB string
+	DTB []byte
 
 	// Mmap kernel and initramfs, so virtual pages are directly mapped
 	// to page cache. Here it is agnostic to whether original kernel and

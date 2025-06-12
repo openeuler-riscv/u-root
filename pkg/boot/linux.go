@@ -177,10 +177,9 @@ func (li *LinuxImage) Load(verbose bool) error {
 
 	// Append device-tree file to the end of initrd
 	if li.DeviceTree != nil {
-		if li.Initrd != nil {
-			li.Initrd = CatInitrds(li.Initrd, li.DeviceTree)
-		} else {
-			li.Initrd = li.DeviceTree
+		li.KexecOpts.DTB, err = uio.ReadAll(li.DeviceTree)
+		if err != nil {
+			errors.New("Failed to fetch DTB")
 		}
 	}
 
@@ -204,7 +203,10 @@ func (li *LinuxImage) Load(verbose bool) error {
 		}
 	}
 
+	li.LoadSyscall = true
+
 	if li.LoadSyscall {
+		log.Printf("Use architecture-specific KexecLoad implementation")
 		return linux.KexecLoad(k, i, li.Cmdline, li.KexecOpts)
 	}
 	return kexec.FileLoad(k, i, li.Cmdline)

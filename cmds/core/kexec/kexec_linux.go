@@ -157,7 +157,6 @@ func main() {
 				Cmdline:     newCmdline,
 				LoadSyscall: opts.loadSyscall,
 				KexecOpts: linux.KexecOptions{
-					DTB:        opts.dtb,
 					MmapKernel: opts.mmapKernel,
 					MmapRamfs:  opts.mmapInitrd,
 				},

@@ -59,6 +59,34 @@ type Node struct {
 	Children   []*Node    `json:",omitempty"`
 }
 
+// NodeOptioner is used to modify a Node for NewNode.
+type NodeOptioner func(n *Node)
+
+// WithProperty adds the given properties to the node.
+func WithProperty(p ...Property) NodeOptioner {
+	return func(n *Node) {
+		n.Properties = append(n.Properties, p...)
+	}
+}
+
+// WithChildren adds childen to the node.
+func WithChildren(c ...*Node) NodeOptioner {
+	return func(n *Node) {
+		n.Children = append(n.Children, c...)
+	}
+}
+
+// NewNode creates a node.
+func NewNode(name string, opts ...NodeOptioner) *Node {
+	n := &Node{
+		Name: name,
+	}
+	for _, opt := range opts {
+		opt(n)
+	}
+	return n
+}
+
 // Walk calls f on a Node and alls its descendents.
 func (n *Node) Walk(f func(*Node) error) error {
 	if err := f(n); err != nil {

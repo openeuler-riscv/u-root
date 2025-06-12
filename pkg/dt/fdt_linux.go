@@ -130,6 +130,29 @@ func ReadFDT(f io.ReadSeeker) (*FDT, error) {
 	return fdt, nil
 }
 
+// ReadFDT reads FDT from an io.ReadSeeker.
+func ParseDTB(dts []byte) (*FDT, error) {
+	fdt := &FDT{}
+	f := bytes.NewReader(dts)
+	if err := fdt.readHeader(f); err != nil {
+		return nil, err
+	}
+	if err := fdt.readMemoryReservationBlock(f); err != nil {
+		return nil, err
+	}
+	if err := fdt.checkLayout(); err != nil {
+		return nil, err
+	}
+	strs, err := fdt.readStringsBlock(f)
+	if err != nil {
+		return nil, err
+	}
+	if err := fdt.readStructBlock(f, strs); err != nil {
+		return nil, err
+	}
+	return fdt, nil
+}
+
 func (fdt *FDT) readHeader(f io.ReadSeeker) error {
 	h := &fdt.Header
 	if _, err := f.Seek(0, io.SeekStart); err != nil {
