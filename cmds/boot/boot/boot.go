@@ -48,8 +48,8 @@ var (
 	noLoad  = flag.Bool("no-load", false, "print chosen boot configuration, but do not load + exec it")
 	noExec  = flag.Bool("no-exec", false, "load boot configuration, but do not exec it")
 
-	removeCmdlineItem = flag.String("remove", "console", "comma separated list of kernel params value to remove from parsed kernel configuration (default to console)")
-	reuseCmdlineItem  = flag.String("reuse", "console", "comma separated list of kernel params value to reuse from current kernel (default to console)")
+	removeCmdlineItem = flag.String("remove", "", "comma separated list of kernel params value to remove from parsed kernel configuration")
+	reuseCmdlineItem  = flag.String("reuse", "", "comma separated list of kernel params value to reuse from current kernel")
 	appendCmdline     = flag.String("append", "", "Additional kernel params")
 	blockList         = flag.String("block", "", "comma separated list of pci vendor and device ids to ignore (format vendor:device). E.g. 0x8086:0x1234,0x8086:0xabcd")
 )
