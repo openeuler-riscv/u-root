@@ -181,6 +181,7 @@ func (li *LinuxImage) Load(verbose bool) error {
 		if err != nil {
 			errors.New("Failed to fetch DTB")
 		}
+		li.LoadSyscall = true
 	}
 
 	var i *os.File
@@ -202,8 +203,6 @@ func (li *LinuxImage) Load(verbose bool) error {
 			log.Print("Device tree loaded: true")
 		}
 	}
-
-	li.LoadSyscall = true
 
 	if li.LoadSyscall {
 		log.Printf("Use architecture-specific KexecLoad implementation")
