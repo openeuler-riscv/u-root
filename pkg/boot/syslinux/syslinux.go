@@ -12,11 +12,13 @@
 package syslinux
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -395,6 +397,60 @@ func (c *parser) append(ctx context.Context, config string) error {
 					return err
 				}
 				e.DeviceTree = dtb
+			}
+
+		case "fdtdir":
+			if e, ok := c.linuxEntries[c.curEntry]; ok {
+				// Do nothing if fdt is specified
+				// Will be override if fdtdir is specified before fdt
+				if e.DeviceTree == nil {
+					// expected dtb filename is hardcoded here
+					// as a mapping from existing fdt compatible to a list of potential filenames
+					fdtmap := map[string][]string{
+						"sophgo,mango": {
+							"sophgo/mango-milkv-pioneer",
+						},
+						"sophgo,srd3-10": {
+							"sophgo/sg2044-sophgo-srd3-10",
+						},
+						"sophgo,sg2044": {
+							"sophgo/sg2044-sophgo-srd3-10",
+						},
+					}
+
+					content, err := os.ReadFile("/sys/firmware/devicetree/base/compatible")
+					if err != nil {
+						fmt.Println("failed to read /sys/firmware/devicetree/base/compatible:", err)
+						return err
+					}
+
+					items := bytes.Split(content, []byte{0})
+					// Remove empty strings if any
+					for _, compatible := range items {
+						if len(compatible) == 0 {
+							continue
+						}
+						log.Printf("detected compatible string: %s\n", string(compatible))
+
+						if value, exists := fdtmap[string(compatible)]; exists {
+							for _, fdtfile := range value {
+								dtbpath := filepath.Join(arg, fdtfile + ".dtb")
+								log.Printf("try loading fdt: %s\n", dtbpath)
+								dtb, err := c.getFile(dtbpath)
+								if err != nil {
+									continue
+								}
+								log.Printf("%s loaded\n", dtbpath)
+								e.DeviceTree = dtb
+								break
+							}
+						}
+					}
+
+					if e.DeviceTree == nil {
+						log.Printf("failed to load fdt from: %s\n", arg)
+					}
+				}
 			}
 
 		case "append":
