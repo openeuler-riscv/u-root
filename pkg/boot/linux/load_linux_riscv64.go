@@ -70,10 +70,15 @@ func FixupFDTMemory(fdt_src *dt.FDT, fdt_dist *dt.FDT) (error) {
 		}
 		p, found = n.LookProperty("reg")
 		if found {
-			new_node := dt.NewNode(n.Name)
-			new_node.Children = append(n.Children)
-			new_node.Properties = append(n.Properties)
-			fdt_dist.RootNode.Children = append(fdt_dist.RootNode.Children, new_node)
+			// update existing node if found
+			memory_node, _ := fdt_dist.NodeByName(n.Name)
+			if memory_node == nil {
+				memory_node = dt.NewNode(n.Name)
+				fdt_dist.RootNode.Children = append(fdt_dist.RootNode.Children, memory_node)
+			}
+			for idx := range n.Properties {
+				memory_node.UpdateProperty(n.Properties[idx].Name, n.Properties[idx].Value)
+			}
 		}
 		return nil
 	}
@@ -82,12 +87,17 @@ func FixupFDTMemory(fdt_src *dt.FDT, fdt_dist *dt.FDT) (error) {
 		return err
 	}
 
-	resv, found := fdt_src.NodeByName("reserved-memory")
+	n, found := fdt_src.NodeByName("reserved-memory")
 	if found {
-		new_node := dt.NewNode(resv.Name)
-		new_node.Children = append(resv.Children)
-		new_node.Properties = append(resv.Properties)
-		fdt_dist.RootNode.Children = append(fdt_dist.RootNode.Children, new_node)
+		reserv_node, _ := fdt_dist.NodeByName(n.Name)
+		if reserv_node == nil {
+			reserv_node = dt.NewNode(n.Name)
+			fdt_dist.RootNode.Children = append(fdt_dist.RootNode.Children, reserv_node)
+		}
+		for idx := range n.Properties {
+			reserv_node.UpdateProperty(n.Properties[idx].Name, n.Properties[idx].Value)
+		}
+		reserv_node.Children = append(n.Children)
 	}
 
 	return nil
