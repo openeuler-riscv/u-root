@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/u-root/u-root/pkg/boot"
+	"github.com/u-root/u-root/pkg/fwupdate"
 	"github.com/u-root/u-root/pkg/sh"
 	"golang.org/x/sys/unix"
 )
@@ -338,3 +339,42 @@ func (Reboot) Exec() error {
 
 // IsDefault indicates that this should not be run as a default action.
 func (Reboot) IsDefault() bool { return false }
+
+// FWUpdates returns menu entries for the given Firmware Updates.
+func FWUpdates(upds ...fwupdate.FWUpdate) []Entry {
+	var menu []Entry
+	for _, upd := range upds {
+		menu = append(menu, &FirmwareUpdate{
+			update: upd,
+		})
+	}
+	return menu
+}
+
+// FirmwareUpdate is a menu.Entry that updates the firmware.
+type FirmwareUpdate struct{
+	update	fwupdate.FWUpdate
+}
+
+// Label returns either the Name or a short description.
+func (menu FirmwareUpdate) Label() string {
+	return menu.update.GetLabel()
+}
+
+// Edit does nothing.
+func (FirmwareUpdate) Edit(func(cmdline string) string) {
+}
+
+// Load does something.
+func (menu FirmwareUpdate) Load() error {
+	log.Printf("Attempting to load FWUpdate...\n\n")
+	return menu.update.Load()
+}
+
+// Exec reboots the machine using sys_reboot.
+func (menu FirmwareUpdate) Exec() error {
+	return menu.update.Perform()
+}
+
+// IsDefault indicates that this should not be run as a default action.
+func (FirmwareUpdate) IsDefault() bool { return false }

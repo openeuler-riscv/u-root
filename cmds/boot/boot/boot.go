@@ -38,6 +38,7 @@ import (
 	"github.com/u-root/u-root/pkg/boot/localboot"
 	"github.com/u-root/u-root/pkg/boot/menu"
 	"github.com/u-root/u-root/pkg/cmdline"
+	"github.com/u-root/u-root/pkg/fwupdate"
 	"github.com/u-root/u-root/pkg/mount"
 	"github.com/u-root/u-root/pkg/mount/block"
 	"github.com/u-root/u-root/pkg/ulog"
@@ -101,8 +102,13 @@ func main() {
 			li.Cmdline = updateBootCmdline(li.Cmdline)
 		}
 	}
+	firmwares, err := fwupdate.LocalUpdate(l, blockDevs, mountPool)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	menuEntries := menu.OSImages(*verbose, images...)
+	menuEntries = append(menuEntries, menu.FWUpdates(firmwares...)...)
 	menuEntries = append(menuEntries, menu.Reboot{})
 	menuEntries = append(menuEntries, menu.StartShell{})
 
