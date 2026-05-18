@@ -240,6 +240,16 @@ func parseURL(name string, rootdir *url.URL, wd string) (*url.URL, error) {
 	return u, nil
 }
 
+func (c *parser) checkFileExist(url string) (bool) {
+	u, err := parseURL(url, c.rootdir, c.wd)
+	if err != nil {
+		return false
+	}
+
+	_, err = c.schemes.Fetch(context.TODO(), u)
+	return err != nil
+}
+
 // getFile parses `url` relative to the config's working directory and returns
 // an io.Reader for the requested url.
 //
@@ -437,6 +447,10 @@ func (c *parser) append(ctx context.Context, config string) error {
 							for _, fdtfile := range value {
 								dtbpath := filepath.Join(arg, fdtfile + ".dtb")
 								log.Printf("try loading fdt: %s\n", dtbpath)
+								if c.checkFileExist(dtbpath) {
+									log.Printf("dtb file not found %q: %v", dtbpath, err)
+									continue
+								}
 								dtb, err := c.getFile(dtbpath)
 								if err != nil {
 									continue
