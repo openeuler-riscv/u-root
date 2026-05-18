@@ -409,6 +409,7 @@ func (c *parser) append(ctx context.Context, config string) error {
 					fdtmap := map[string][]string{
 						"sophgo,mango": {
 							"sophgo/mango-milkv-pioneer",
+							"sophgo/sg2042-milkv-pioneer",
 						},
 						"sophgo,srd3-10": {
 							"sophgo/sg2044-sophgo-srd3-10",
